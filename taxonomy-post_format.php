@@ -1,6 +1,12 @@
 <?php
 /**
- * The template for displaying Search Results pages
+ * The template for displaying Post Format pages
+ *
+ * Used to display archive-type pages for posts with a post format.
+ * If you'd like to further customize these Post Format views, you may create a
+ * new template file for each specific one.
+ *
+ * @link http://codex.wordpress.org/Template_Hierarchy
  *
  * @package WordPress
  * @subpackage Twenty_Thirteen
@@ -13,10 +19,9 @@ get_header(); ?>
 		<div id="content" class="site-content" role="main">
 
 		<?php if ( have_posts() ) : ?>
-
-			<header class="page-header">
-				<h1 class="page-title"><?php printf( __( 'Search Results for: %s', 'twentythirteen' ), get_search_query() ); ?></h1>
-			</header>
+			<header class="archive-header">
+				<h1 class="archive-title"><?php printf( __( '%s Archives', 'twentythirteen' ), '<span>' . get_post_format_string( get_post_format() ) . '</span>' ); ?></h1>
+			</header><!-- .archive-header -->
 
 			<?php /* The loop */ ?>
 			<?php while ( have_posts() ) : the_post(); ?>

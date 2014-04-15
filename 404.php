@@ -1,43 +1,31 @@
-<?php get_header(); ?>
+<?php
+/**
+ * The template for displaying 404 pages (Not Found)
+ *
+ * @package WordPress
+ * @subpackage Twenty_Thirteen
+ * @since Twenty Thirteen 1.0
+ */
 
-			<div id="content">
+get_header(); ?>
 
-				<div id="inner-content" class="wrap cf">
+	<div id="primary" class="content-area">
+		<div id="content" class="site-content" role="main">
 
-					<div id="main" class="m-all t-2of3 d-5of7 cf" role="main">
+			<header class="page-header">
+				<h1 class="page-title"><?php _e( 'Not Found', 'twentythirteen' ); ?></h1>
+			</header>
 
-						<article id="post-not-found" class="hentry cf">
+			<div class="page-wrapper">
+				<div class="page-content">
+					<h2><?php _e( 'This is somewhat embarrassing, isn&rsquo;t it?', 'twentythirteen' ); ?></h2>
+					<p><?php _e( 'It looks like nothing was found at this location. Maybe try a search?', 'twentythirteen' ); ?></p>
 
-							<header class="article-header">
+					<?php get_search_form(); ?>
+				</div><!-- .page-content -->
+			</div><!-- .page-wrapper -->
 
-								<h1><?php _e( 'Epic 404 - Article Not Found', 'bonestheme' ); ?></h1>
-
-							</header>
-
-							<section class="entry-content">
-
-								<p><?php _e( 'The article you were looking for was not found, but maybe try looking again!', 'bonestheme' ); ?></p>
-
-							</section>
-
-							<section class="search">
-
-									<p><?php get_search_form(); ?></p>
-
-							</section>
-
-							<footer class="article-footer">
-
-									<p><?php _e( 'This is the 404.php template.', 'bonestheme' ); ?></p>
-
-							</footer>
-
-						</article>
-
-					</div>
-
-				</div>
-
-			</div>
+		</div><!-- #content -->
+	</div><!-- #primary -->
 
 <?php get_footer(); ?>

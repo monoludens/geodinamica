@@ -1,6 +1,10 @@
 <?php
 /**
- * The template for displaying Search Results pages
+ * The template for displaying Tag pages
+ *
+ * Used to display archive-type pages for posts in a tag.
+ *
+ * @link http://codex.wordpress.org/Template_Hierarchy
  *
  * @package WordPress
  * @subpackage Twenty_Thirteen
@@ -13,10 +17,13 @@ get_header(); ?>
 		<div id="content" class="site-content" role="main">
 
 		<?php if ( have_posts() ) : ?>
+			<header class="archive-header">
+				<h1 class="archive-title"><?php printf( __( 'Tag Archives: %s', 'twentythirteen' ), single_tag_title( '', false ) ); ?></h1>
 
-			<header class="page-header">
-				<h1 class="page-title"><?php printf( __( 'Search Results for: %s', 'twentythirteen' ), get_search_query() ); ?></h1>
-			</header>
+				<?php if ( tag_description() ) : // Show an optional tag description ?>
+				<div class="archive-meta"><?php echo tag_description(); ?></div>
+				<?php endif; ?>
+			</header><!-- .archive-header -->
 
 			<?php /* The loop */ ?>
 			<?php while ( have_posts() ) : the_post(); ?>

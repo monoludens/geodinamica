@@ -1,6 +1,8 @@
 <?php
 /**
- * The template for displaying Search Results pages
+ * The template for displaying Category pages
+ *
+ * @link http://codex.wordpress.org/Template_Hierarchy
  *
  * @package WordPress
  * @subpackage Twenty_Thirteen
@@ -13,10 +15,13 @@ get_header(); ?>
 		<div id="content" class="site-content" role="main">
 
 		<?php if ( have_posts() ) : ?>
+			<header class="archive-header">
+				<h1 class="archive-title"><?php printf( __( 'Category Archives: %s', 'twentythirteen' ), single_cat_title( '', false ) ); ?></h1>
 
-			<header class="page-header">
-				<h1 class="page-title"><?php printf( __( 'Search Results for: %s', 'twentythirteen' ), get_search_query() ); ?></h1>
-			</header>
+				<?php if ( category_description() ) : // Show an optional category description ?>
+				<div class="archive-meta"><?php echo category_description(); ?></div>
+				<?php endif; ?>
+			</header><!-- .archive-header -->
 
 			<?php /* The loop */ ?>
 			<?php while ( have_posts() ) : the_post(); ?>
