@@ -1,38 +1,59 @@
 <?php
 /**
- * The main template file
+ * The main template file. Includes the loop.
  *
- * This is the most generic template file in a WordPress theme and one of the
- * two required files for a theme (the other being style.css).
- * It is used to display a page when nothing more specific matches a query.
- * For example, it puts together the home page when no home.php file exists.
  *
- * @link http://codex.wordpress.org/Template_Hierarchy
- *
- * @package WordPress
- * @subpackage Twenty_Thirteen
- * @since Twenty Thirteen 1.0
+ * @package Customizr
+ * @since Customizr 1.0
  */
+?>
+<?php do_action( '__before_main_wrapper' ); ##hook of the header with get_header ?>
+<div id="main-wrapper" class="<?php echo tc__f( 'tc_main_wrapper_classes' , 'container' ) ?>">
 
-get_header(); ?>
+    <?php do_action( '__before_main_container' ); ##hook of the featured page (priority 10) and breadcrumb (priority 20)...and whatever you need! ?>
+    
+    <div class="container" role="main">
+        <div class="<?php echo tc__f( 'tc_column_content_wrapper_classes' , 'row column-content-wrapper' ) ?>">
 
-	<div id="primary" class="content-area">
-		<div id="content" class="site-content" role="main">
-		<?php if ( have_posts() ) : ?>
+            <?php do_action( '__before_article_container'); ##hook of left sidebar?>
+                
+                <div id="content" class="<?php echo tc__f( '__screen_layout' , tc__f ( '__ID' ) , 'class' ) ?> article-container">
+                    
+                    <?php do_action ('__before_loop');##hooks the header of the list of post : archive, search... ?>
 
-			<?php /* The loop */ ?>
-			<?php while ( have_posts() ) : the_post(); ?>
-				<?php get_template_part( 'content', get_post_format() ); ?>
-			<?php endwhile; ?>
+                        <?php if ( tc__f('__is_no_results') || is_404() ) : ##no search results or 404 cases ?>
 
-			<?php twentythirteen_paging_nav(); ?>
+                            <article <?php tc__f('__article_selectors') ?>>
+                                <?php do_action( '__loop' ); ?>
+                            </article>
+                            
+                        <?php endif; ?>
 
-		<?php else : ?>
-			<?php get_template_part( 'content', 'none' ); ?>
-		<?php endif; ?>
+                        <?php if ( have_posts() && !is_404() ) : ?>
+                            <?php while ( have_posts() ) : ##all other cases for single and lists: post, custom post type, page, archives, search, 404 ?>
+                                <?php the_post(); ?>
 
-		</div><!-- #content -->
-	</div><!-- #primary -->
+                                <?php do_action ('__before_article') ?>
+                                    <article <?php tc__f('__article_selectors') ?>>
+                                        <?php do_action( '__loop' ); ?>
+                                    </article>
+                                <?php do_action ('__after_article') ?>
 
-<?php get_sidebar(); ?>
-<?php get_footer(); ?>
+                            <?php endwhile; ?>
+
+                        <?php endif; ##end if have posts ?>
+
+                    <?php do_action ('__after_loop');##hook of the comments and the posts navigation with priorities 10 and 20 ?>
+
+                </div><!--.article-container -->
+
+           <?php do_action( '__after_article_container'); ##hook of left sidebar ?>
+
+        </div><!--.row -->
+    </div><!-- .container role: main -->
+
+    <?php do_action( '__after_main_container' ); ?>
+
+</div><!--#main-wrapper"-->
+
+<?php do_action( '__after_main_wrapper' );##hook of the footer with get_get_footer ?>

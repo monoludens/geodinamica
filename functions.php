@@ -1,548 +1,247 @@
 <?php
 /**
- * Twenty Thirteen functions and definitions
- *
- * Sets up the theme and provides some helper functions, which are used in the
- * theme as custom template tags. Others are attached to action and filter
- * hooks in WordPress to change core functionality.
- *
- * When using a child theme (see http://codex.wordpress.org/Theme_Development
- * and http://codex.wordpress.org/Child_Themes), you can override certain
- * functions (those wrapped in a function_exists() call) by defining them first
- * in your child theme's functions.php file. The child theme's functions.php
- * file is included before the parent theme's file, so the child theme
- * functions would be used.
- *
- * Functions that are not pluggable (not wrapped in function_exists()) are
- * instead attached to a filter or action hook.
- *
- * For more information on hooks, actions, and filters, @link http://codex.wordpress.org/Plugin_API
- *
- * @package WordPress
- * @subpackage Twenty_Thirteen
- * @since Twenty Thirteen 1.0
- */
-
-/*
- * Set up the content width value based on the theme's design.
- *
- * @see twentythirteen_content_width() for template-specific adjustments.
- */
-if ( ! isset( $content_width ) )
-	$content_width = 604;
-
-/**
- * Add support for a custom header image.
- */
-require get_template_directory() . '/inc/custom-header.php';
-
-/**
- * Twenty Thirteen only works in WordPress 3.6 or later.
- */
-if ( version_compare( $GLOBALS['wp_version'], '3.6-alpha', '<' ) )
-	require get_template_directory() . '/inc/back-compat.php';
-
-/**
- * Twenty Thirteen setup.
- *
- * Sets up theme defaults and registers the various WordPress features that
- * Twenty Thirteen supports.
- *
- * @uses load_theme_textdomain() For translation/localization support.
- * @uses add_editor_style() To add Visual Editor stylesheets.
- * @uses add_theme_support() To add support for automatic feed links, post
- * formats, and post thumbnails.
- * @uses register_nav_menu() To add support for a navigation menu.
- * @uses set_post_thumbnail_size() To set a custom post thumbnail size.
- *
- * @since Twenty Thirteen 1.0
- *
- * @return void
- */
-function twentythirteen_setup() {
-	/*
-	 * Makes Twenty Thirteen available for translation.
-	 *
-	 * Translations can be added to the /languages/ directory.
-	 * If you're building a theme based on Twenty Thirteen, use a find and
-	 * replace to change 'twentythirteen' to the name of your theme in all
-	 * template files.
-	 */
-	load_theme_textdomain( 'twentythirteen', get_template_directory() . '/languages' );
-
-	/*
-	 * This theme styles the visual editor to resemble the theme style,
-	 * specifically font, colors, icons, and column width.
-	 */
-	add_editor_style( array( 'css/editor-style.css', 'fonts/genericons.css', twentythirteen_fonts_url() ) );
-
-	// Adds RSS feed links to <head> for posts and comments.
-	add_theme_support( 'automatic-feed-links' );
-
-	/*
-	 * Switches default core markup for search form, comment form,
-	 * and comments to output valid HTML5.
-	 */
-	add_theme_support( 'html5', array( 'search-form', 'comment-form', 'comment-list' ) );
-
-	/*
-	 * This theme supports all available post formats by default.
-	 * See http://codex.wordpress.org/Post_Formats
-	 */
-	add_theme_support( 'post-formats', array(
-		'aside', 'audio', 'chat', 'gallery', 'image', 'link', 'quote', 'status', 'video'
-	) );
-
-	// This theme uses wp_nav_menu() in one location.
-	register_nav_menu( 'primary', __( 'Navigation Menu', 'twentythirteen' ) );
-
-	/*
-	 * This theme uses a custom image size for featured images, displayed on
-	 * "standard" posts and pages.
-	 */
-	add_theme_support( 'post-thumbnails' );
-	set_post_thumbnail_size( 604, 270, true );
-
-	// This theme uses its own gallery styles.
-	add_filter( 'use_default_gallery_style', '__return_false' );
-}
-add_action( 'after_setup_theme', 'twentythirteen_setup' );
-
-/**
- * Return the Google font stylesheet URL, if available.
- *
- * The use of Source Sans Pro and Bitter by default is localized. For languages
- * that use characters not supported by the font, the font can be disabled.
- *
- * @since Twenty Thirteen 1.0
- *
- * @return string Font stylesheet or empty string if disabled.
- */
-function twentythirteen_fonts_url() {
-	$fonts_url = '';
-
-	/* Translators: If there are characters in your language that are not
-	 * supported by Source Sans Pro, translate this to 'off'. Do not translate
-	 * into your own language.
-	 */
-	$source_sans_pro = _x( 'on', 'Source Sans Pro font: on or off', 'twentythirteen' );
-
-	/* Translators: If there are characters in your language that are not
-	 * supported by Bitter, translate this to 'off'. Do not translate into your
-	 * own language.
-	 */
-	$bitter = _x( 'on', 'Bitter font: on or off', 'twentythirteen' );
-
-	if ( 'off' !== $source_sans_pro || 'off' !== $bitter ) {
-		$font_families = array();
-
-		if ( 'off' !== $source_sans_pro )
-			$font_families[] = 'Source Sans Pro:300,400,700,300italic,400italic,700italic';
-
-		if ( 'off' !== $bitter )
-			$font_families[] = 'Bitter:400,700';
-
-		$query_args = array(
-			'family' => urlencode( implode( '|', $font_families ) ),
-			'subset' => urlencode( 'latin,latin-ext' ),
-		);
-		$fonts_url = add_query_arg( $query_args, "//fonts.googleapis.com/css" );
-	}
-
-	return $fonts_url;
-}
-
-/**
- * Enqueue scripts and styles for the front end.
- *
- * @since Twenty Thirteen 1.0
- *
- * @return void
- */
-function twentythirteen_scripts_styles() {
-	/*
-	 * Adds JavaScript to pages with the comment form to support
-	 * sites with threaded comments (when in use).
-	 */
-	if ( is_singular() && comments_open() && get_option( 'thread_comments' ) )
-		wp_enqueue_script( 'comment-reply' );
-
-	// Adds Masonry to handle vertical alignment of footer widgets.
-	if ( is_active_sidebar( 'sidebar-1' ) )
-		wp_enqueue_script( 'jquery-masonry' );
-
-	// Loads JavaScript file with functionality specific to Twenty Thirteen.
-	wp_enqueue_script( 'twentythirteen-script', get_template_directory_uri() . '/js/functions.js', array( 'jquery' ), '2013-07-18', true );
-
-	// Add Source Sans Pro and Bitter fonts, used in the main stylesheet.
-	wp_enqueue_style( 'twentythirteen-fonts', twentythirteen_fonts_url(), array(), null );
-
-	// Add Genericons font, used in the main stylesheet.
-	wp_enqueue_style( 'genericons', get_template_directory_uri() . '/fonts/genericons.css', array(), '2.09' );
-
-	// Loads our main stylesheet.
-	wp_enqueue_style( 'twentythirteen-style', get_stylesheet_uri(), array(), '2013-07-18' );
-
-	// Loads the Internet Explorer specific stylesheet.
-	wp_enqueue_style( 'twentythirteen-ie', get_template_directory_uri() . '/css/ie.css', array( 'twentythirteen-style' ), '2013-07-18' );
-	wp_style_add_data( 'twentythirteen-ie', 'conditional', 'lt IE 9' );
-}
-add_action( 'wp_enqueue_scripts', 'twentythirteen_scripts_styles' );
-
-/**
- * Filter the page title.
- *
- * Creates a nicely formatted and more specific title element text for output
- * in head of document, based on current view.
- *
- * @since Twenty Thirteen 1.0
- *
- * @param string $title Default title text for current view.
- * @param string $sep   Optional separator.
- * @return string The filtered title.
- */
-function twentythirteen_wp_title( $title, $sep ) {
-	global $paged, $page;
-
-	if ( is_feed() )
-		return $title;
-
-	// Add the site name.
-	$title .= get_bloginfo( 'name' );
-
-	// Add the site description for the home/front page.
-	$site_description = get_bloginfo( 'description', 'display' );
-	if ( $site_description && ( is_home() || is_front_page() ) )
-		$title = "$title $sep $site_description";
-
-	// Add a page number if necessary.
-	if ( $paged >= 2 || $page >= 2 )
-		$title = "$title $sep " . sprintf( __( 'Page %s', 'twentythirteen' ), max( $paged, $page ) );
-
-	return $title;
-}
-add_filter( 'wp_title', 'twentythirteen_wp_title', 10, 2 );
-
-/**
- * Register two widget areas.
- *
- * @since Twenty Thirteen 1.0
- *
- * @return void
- */
-function twentythirteen_widgets_init() {
-	register_sidebar( array(
-		'name'          => __( 'Main Widget Area', 'twentythirteen' ),
-		'id'            => 'sidebar-1',
-		'description'   => __( 'Appears in the footer section of the site.', 'twentythirteen' ),
-		'before_widget' => '<aside id="%1$s" class="widget %2$s">',
-		'after_widget'  => '</aside>',
-		'before_title'  => '<h3 class="widget-title">',
-		'after_title'   => '</h3>',
-	) );
-
-	register_sidebar( array(
-		'name'          => __( 'Secondary Widget Area', 'twentythirteen' ),
-		'id'            => 'sidebar-2',
-		'description'   => __( 'Appears on posts and pages in the sidebar.', 'twentythirteen' ),
-		'before_widget' => '<aside id="%1$s" class="widget %2$s">',
-		'after_widget'  => '</aside>',
-		'before_title'  => '<h3 class="widget-title">',
-		'after_title'   => '</h3>',
-	) );
-}
-add_action( 'widgets_init', 'twentythirteen_widgets_init' );
-
-if ( ! function_exists( 'twentythirteen_paging_nav' ) ) :
-/**
- * Display navigation to next/previous set of posts when applicable.
- *
- * @since Twenty Thirteen 1.0
- *
- * @return void
- */
-function twentythirteen_paging_nav() {
-	global $wp_query;
-
-	// Don't print empty markup if there's only one page.
-	if ( $wp_query->max_num_pages < 2 )
-		return;
-	?>
-	<nav class="navigation paging-navigation" role="navigation">
-		<h1 class="screen-reader-text"><?php _e( 'Posts navigation', 'twentythirteen' ); ?></h1>
-		<div class="nav-links">
-
-			<?php if ( get_next_posts_link() ) : ?>
-			<div class="nav-previous"><?php next_posts_link( __( '<span class="meta-nav">&larr;</span> Older posts', 'twentythirteen' ) ); ?></div>
-			<?php endif; ?>
-
-			<?php if ( get_previous_posts_link() ) : ?>
-			<div class="nav-next"><?php previous_posts_link( __( 'Newer posts <span class="meta-nav">&rarr;</span>', 'twentythirteen' ) ); ?></div>
-			<?php endif; ?>
-
-		</div><!-- .nav-links -->
-	</nav><!-- .navigation -->
-	<?php
-}
-endif;
-
-if ( ! function_exists( 'twentythirteen_post_nav' ) ) :
-/**
- * Display navigation to next/previous post when applicable.
+* 
+* This program is a free software; you can use it and/or modify it under the terms of the GNU 
+* General Public License as published by the Free Software Foundation; either version 2 of the License, 
+* or (at your option) any later version.
 *
-* @since Twenty Thirteen 1.0
+* This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without 
+* even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 *
-* @return void
+* You should have received a copy of the GNU General Public License along with this program; if not, write 
+* to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+*
+* @package   	Customizr
+* @subpackage 	functions
+* @since     	1.0
+* @author    	Nicolas GUILLAUME <nicolas@themesandco.com>
+* @copyright 	Copyright (c) 2013, Nicolas GUILLAUME
+* @link      	http://themesandco.com/customizr
+* @license   	http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 */
-function twentythirteen_post_nav() {
-	global $post;
 
-	// Don't print empty markup if there's nowhere to navigate.
-	$previous = ( is_attachment() ) ? get_post( $post->post_parent ) : get_adjacent_post( false, '', true );
-	$next     = get_adjacent_post( false, '', false );
 
-	if ( ! $next && ! $previous )
-		return;
-	?>
-	<nav class="navigation post-navigation" role="navigation">
-		<h1 class="screen-reader-text"><?php _e( 'Post navigation', 'twentythirteen' ); ?></h1>
-		<div class="nav-links">
 
-			<?php previous_post_link( '%link', _x( '<span class="meta-nav">&larr;</span> %title', 'Previous post link', 'twentythirteen' ) ); ?>
-			<?php next_post_link( '%link', _x( '%title <span class="meta-nav">&rarr;</span>', 'Next post link', 'twentythirteen' ) ); ?>
+/**
+* This is where Customizr starts. This file defines and loads the theme's components :
+* 1) A function tc__f() used everywhere in the theme, extension of WP built-in apply_filters()
+* 2) Constants : CUSTOMIZR_VER, TC_BASE, TC_BASE_CHILD, TC_BASE_URL, TC_BASE_URL_CHILD, THEMENAME, TC_WEBSITE
+* 3) Default filtered values : images sizes, skins, featured pages, social networks, widgets, post list layout
+* 4) Text Domain
+* 5) Theme supports : editor style, automatic-feed-links, post formats, navigation menu, post-thumbnails, retina support
+* 6) Plugins compatibility : jetpack, bbpress, qtranslate, woocommerce and more to come
+* 7) Default filtered options for the customizer
+* 8) Customizr theme's hooks API : front end components are rendered with action and filter hooks
+* 
+* The method TC__::tc__() loads the php files and instanciates all theme's classes.
+* All classes files (except the class__.php file which loads the other) are named with the following convention : class-[group]-[class_name].php
+* 
+* The theme is entirely built on an extensible filter and action hooks API, which makes customizations easy as breeze, without ever needing to modify the core structure.
+* Customizr's code acts like a collection of plugins that can be enabled, disabled or extended.
+* 
+*/
 
-		</div><!-- .nav-links -->
-	</nav><!-- .navigation -->
-	<?php
-}
+
+
+/**
+* The best and safest way to extend Customizr with your own custom functions is to create a child theme.
+* You can add functions here but they will be lost on upgrade. If you use a child theme, you are safe!
+* More informations on how to create a child theme with Customizr here : http://themesandco.com/customizr/#child-theme
+*/
+
+
+
+/**
+* The tc__f() function is an extension of WP built-in apply_filters() where the $value param becomes optional.
+* It is shorter than the original apply_filters() and only used on already defined filters.
+* 
+* By convention in Customizr, filter hooks are used as follow :
+* 1) declared with add_filters in class constructors (mainly) to hook on WP built-in callbacks or create "getters" used everywhere
+* 2) declared with apply_filters in methods to make the code extensible for developers
+* 3) accessed with tc__f() to return values (while front end content is handled with action hooks)
+* 
+* Used everywhere in Customizr. Can pass up to five variables to the filter callback.
+*
+* @since Customizr 3.0
+*/
+if( !function_exists( 'tc__f' )) :
+    function tc__f ( $tag , $value = null , $arg_one = null , $arg_two = null , $arg_three = null , $arg_four = null , $arg_five = null) {
+       return apply_filters( $tag , $value , $arg_one , $arg_two , $arg_three , $arg_four , $arg_five );
+    }
 endif;
 
-if ( ! function_exists( 'twentythirteen_entry_meta' ) ) :
-/**
- * Print HTML with meta information for current post: categories, tags, permalink, author, and date.
- *
- * Create your own twentythirteen_entry_meta() to override in a child theme.
- *
- * @since Twenty Thirteen 1.0
- *
- * @return void
- */
-function twentythirteen_entry_meta() {
-	if ( is_sticky() && is_home() && ! is_paged() )
-		echo '<span class="featured-post">' . __( 'Sticky', 'twentythirteen' ) . '</span>';
 
-	if ( ! has_post_format( 'link' ) && 'post' == get_post_type() )
-		twentythirteen_entry_date();
-
-	// Translators: used between list items, there is a space after the comma.
-	$categories_list = get_the_category_list( __( ', ', 'twentythirteen' ) );
-	if ( $categories_list ) {
-		echo '<span class="categories-links">' . $categories_list . '</span>';
-	}
-
-	// Translators: used between list items, there is a space after the comma.
-	$tag_list = get_the_tag_list( '', __( ', ', 'twentythirteen' ) );
-	if ( $tag_list ) {
-		echo '<span class="tags-links">' . $tag_list . '</span>';
-	}
-
-	// Post author
-	if ( 'post' == get_post_type() ) {
-		printf( '<span class="author vcard"><a class="url fn n" href="%1$s" title="%2$s" rel="author">%3$s</a></span>',
-			esc_url( get_author_posts_url( get_the_author_meta( 'ID' ) ) ),
-			esc_attr( sprintf( __( 'View all posts by %s', 'twentythirteen' ), get_the_author() ) ),
-			get_the_author()
-		);
-	}
-}
-endif;
-
-if ( ! function_exists( 'twentythirteen_entry_date' ) ) :
-/**
- * Print HTML with date information for current post.
- *
- * Create your own twentythirteen_entry_date() to override in a child theme.
- *
- * @since Twenty Thirteen 1.0
- *
- * @param boolean $echo (optional) Whether to echo the date. Default true.
- * @return string The HTML-formatted post date.
- */
-function twentythirteen_entry_date( $echo = true ) {
-	if ( has_post_format( array( 'chat', 'status' ) ) )
-		$format_prefix = _x( '%1$s on %2$s', '1: post format name. 2: date', 'twentythirteen' );
-	else
-		$format_prefix = '%2$s';
-
-	$date = sprintf( '<span class="date"><a href="%1$s" title="%2$s" rel="bookmark"><time class="entry-date" datetime="%3$s">%4$s</time></a></span>',
-		esc_url( get_permalink() ),
-		esc_attr( sprintf( __( 'Permalink to %s', 'twentythirteen' ), the_title_attribute( 'echo=0' ) ) ),
-		esc_attr( get_the_date( 'c' ) ),
-		esc_html( sprintf( $format_prefix, get_post_format_string( get_post_format() ), get_the_date() ) )
-	);
-
-	if ( $echo )
-		echo $date;
-
-	return $date;
-}
-endif;
-
-if ( ! function_exists( 'twentythirteen_the_attached_image' ) ) :
-/**
- * Print the attached image with a link to the next attached image.
- *
- * @since Twenty Thirteen 1.0
- *
- * @return void
- */
-function twentythirteen_the_attached_image() {
-	/**
-	 * Filter the image attachment size to use.
-	 *
-	 * @since Twenty thirteen 1.0
-	 *
-	 * @param array $size {
-	 *     @type int The attachment height in pixels.
-	 *     @type int The attachment width in pixels.
-	 * }
-	 */
-	$attachment_size     = apply_filters( 'twentythirteen_attachment_size', array( 724, 724 ) );
-	$next_attachment_url = wp_get_attachment_url();
-	$post                = get_post();
-
-	/*
-	 * Grab the IDs of all the image attachments in a gallery so we can get the URL
-	 * of the next adjacent image in a gallery, or the first image (if we're
-	 * looking at the last image in a gallery), or, in a gallery of one, just the
-	 * link to that image file.
-	 */
-	$attachment_ids = get_posts( array(
-		'post_parent'    => $post->post_parent,
-		'fields'         => 'ids',
-		'numberposts'    => -1,
-		'post_status'    => 'inherit',
-		'post_type'      => 'attachment',
-		'post_mime_type' => 'image',
-		'order'          => 'ASC',
-		'orderby'        => 'menu_order ID'
-	) );
-
-	// If there is more than 1 attachment in a gallery...
-	if ( count( $attachment_ids ) > 1 ) {
-		foreach ( $attachment_ids as $attachment_id ) {
-			if ( $attachment_id == $post->ID ) {
-				$next_id = current( $attachment_ids );
-				break;
-			}
-		}
-
-		// get the URL of the next image attachment...
-		if ( $next_id )
-			$next_attachment_url = get_attachment_link( $next_id );
-
-		// or get the URL of the first image attachment.
-		else
-			$next_attachment_url = get_attachment_link( array_shift( $attachment_ids ) );
-	}
-
-	printf( '<a href="%1$s" title="%2$s" rel="attachment">%3$s</a>',
-		esc_url( $next_attachment_url ),
-		the_title_attribute( array( 'echo' => false ) ),
-		wp_get_attachment_image( $post->ID, $attachment_size )
-	);
-}
-endif;
 
 /**
- * Return the post URL.
- *
- * @uses get_url_in_content() to get the URL in the post meta (if it exists) or
- * the first link found in the post content.
- *
- * Falls back to the post permalink if no URL is found in the post.
- *
- * @since Twenty Thirteen 1.0
- *
- * @return string The Link format URL.
- */
-function twentythirteen_get_link_url() {
-	$content = get_the_content();
-	$has_url = get_url_in_content( $content );
+* Fires the theme : constants definition, core classes loading
+*
+* 
+* @package      Customizr
+* @subpackage   classes
+* @since        3.0
+* @author       Nicolas GUILLAUME <nicolas@themesandco.com>
+* @copyright    Copyright (c) 2013, Nicolas GUILLAUME
+* @link         http://themesandco.com/customizr
+* @license      http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+*/
 
-	return ( $has_url ) ? $has_url : apply_filters( 'the_permalink', get_permalink() );
-}
+class TC___ {
+    
+    //Access any method or var of the class with classname::$instance -> var or method():
+    static $instance;
 
-/**
- * Extend the default WordPress body classes.
- *
- * Adds body classes to denote:
- * 1. Single or multiple authors.
- * 2. Active widgets in the sidebar to change the layout and spacing.
- * 3. When avatars are disabled in discussion settings.
- *
- * @since Twenty Thirteen 1.0
- *
- * @param array $classes A list of existing body class values.
- * @return array The filtered body class list.
- */
-function twentythirteen_body_class( $classes ) {
-	if ( ! is_multi_author() )
-		$classes[] = 'single-author';
+    public $tc_core;
 
-	if ( is_active_sidebar( 'sidebar-2' ) && ! is_attachment() && ! is_404() )
-		$classes[] = 'sidebar';
+    function __construct () {
 
-	if ( ! get_option( 'show_avatars' ) )
-		$classes[] = 'no-avatars';
+        self::$instance =& $this;
 
-	return $classes;
-}
-add_filter( 'body_class', 'twentythirteen_body_class' );
+        //this is the structure of the Customizr code : groups => ('path' , 'class_suffix')
+        $this -> tc_core = apply_filters( 'tc_core',
+                        array(
+                            'fire'      =>   array(
+                                            array('inc' , 'init'),//defines default values (layout, socials, default slider...) and theme supports (after_setup_theme)
+                                            array('inc' , 'resources'),//loads style (skins) and scripts
+                                            array('inc' , 'utils'),//those are helpers used everywhere
+                                            array('inc' , 'widgets'),//widget factory
+                                            array('inc/admin' , 'admin_init'),//fires the customizer and the metaboxes for slider and layout options
+                                        ),
+                            //the following files/classes define the action hooks for front end rendering : header, main content, footer
+                            'header'    =>   array(
+                                            array('parts' , 'header_main'),
+                                            array('parts' , 'menu'),
+                                            array('parts' , 'nav_walker'),
+                                        ),
+                            'content'   =>  array(
+                                            array('parts', '404'),
+                                            array('parts', 'attachment'),
+                                            array('parts', 'breadcrumb'),
+                                            array('parts', 'comments'),
+                                            array('parts', 'featured_pages'),
+                                            array('parts', 'gallery'),
+                                            array('parts', 'headings'),
+                                            array('parts', 'no_results'),
+                                            array('parts', 'page'),
+                                            array('parts', 'post'),
+                                            array('parts', 'post_list'),
+                                            array('parts', 'post_metas'),
+                                            array('parts', 'post_navigation'),
+                                            array('parts', 'sidebar'),
+                                            array('parts', 'slider'),
+                                        ),
+                            'footer'    => array(
+                                            array('parts', 'footer_main'),
+                                        ),
+                            'addons'    => apply_filters('tc_addons_classes' , array() )
+                        )//end of array                         
+        );//end of filter
+        
+        /* GETS INFORMATIONS FROM STYLE.CSS */
+        // get themedata version wp 3.4+
+        if( function_exists( 'wp_get_theme' ) )
+          {
+            //get WP_Theme object of customizr
+            $tc_theme                     = wp_get_theme();
 
-/**
- * Adjust content_width value for video post formats and attachment templates.
- *
- * @since Twenty Thirteen 1.0
- *
- * @return void
- */
-function twentythirteen_content_width() {
-	global $content_width;
+            //Get infos from parent theme if using a child theme
+            $tc_theme = $tc_theme -> parent() ? $tc_theme -> parent() : $tc_theme;
 
-	if ( is_attachment() )
-		$content_width = 724;
-	elseif ( has_post_format( 'audio' ) )
-		$content_width = 484;
-}
-add_action( 'template_redirect', 'twentythirteen_content_width' );
+            $tc_base_data['prefix']       = $tc_base_data['title'] = $tc_theme -> name;
+            $tc_base_data['version']      = $tc_theme -> version;
+            $tc_base_data['authoruri']    = $tc_theme -> {'Author URI'};
+          }
 
-/**
- * Add postMessage support for site title and description for the Customizer.
- *
- * @since Twenty Thirteen 1.0
- *
- * @param WP_Customize_Manager $wp_customize Customizer object.
- * @return void
- */
-function twentythirteen_customize_register( $wp_customize ) {
-	$wp_customize->get_setting( 'blogname' )->transport         = 'postMessage';
-	$wp_customize->get_setting( 'blogdescription' )->transport  = 'postMessage';
-	$wp_customize->get_setting( 'header_textcolor' )->transport = 'postMessage';
-}
-add_action( 'customize_register', 'twentythirteen_customize_register' );
+        // get themedata for lower versions (get_stylesheet_directory() points to the current theme root, child or parent)
+        else
+          {
+             $tc_base_data                = get_theme_data( get_stylesheet_directory().'/style.css' );
+             $tc_base_data['prefix']      = $tc_base_data['title'];
+          }
 
-/**
- * Enqueue Javascript postMessage handlers for the Customizer.
- *
- * Binds JavaScript handlers to make the Customizer preview
- * reload changes asynchronously.
- *
- * @since Twenty Thirteen 1.0
- *
- * @return void
- */
-function twentythirteen_customize_preview_js() {
-	wp_enqueue_script( 'twentythirteen-customizer', get_template_directory_uri() . '/js/theme-customizer.js', array( 'customize-preview' ), '20130226', true );
-}
-add_action( 'customize_preview_init', 'twentythirteen_customize_preview_js' );
+        /* CUSTOMIZR_VER is the Version */
+        if( ! defined( 'CUSTOMIZR_VER' ) )      { define( 'CUSTOMIZR_VER' , $tc_base_data['version'] ); }
+
+        /* TC_BASE is the root server path of the parent theme */
+        if( ! defined( 'TC_BASE' ) )            { define( 'TC_BASE' , get_template_directory().'/' ); }
+
+        /* TC_BASE_CHILD is the root server path of the child theme */
+        if( ! defined( 'TC_BASE_CHILD' ) )      { define( 'TC_BASE_CHILD' , get_stylesheet_directory().'/' ); }
+
+        /* TC_BASE_URL http url of the loaded parent theme*/
+        if( ! defined( 'TC_BASE_URL' ) )        { define( 'TC_BASE_URL' , get_template_directory_uri() . '/' ); }
+
+        /* TC_BASE_URL_CHILD http url of the loaded child theme*/
+        if( ! defined( 'TC_BASE_URL_CHILD' ) )  { define( 'TC_BASE_URL_CHILD' , get_stylesheet_directory_uri() . '/' ); }
+
+        /* THEMENAME contains the Name of the currently loaded theme */
+        if( ! defined( 'THEMENAME' ) )          { define( 'THEMENAME' , $tc_base_data['title'] ); }
+
+        /* TC_WEBSITE is the home website of Customizr */
+        if( ! defined( 'TC_WEBSITE' ) )         { define( 'TC_WEBSITE' , $tc_base_data['authoruri'] ); }
+
+        /* theme class groups instanciation */
+        $this -> tc__ ( $this -> tc_core );
+
+    }//end of __construct()
+
+
+
+    /**
+    * Class instanciation with a singleton factory : 
+    * Thanks to Ben Doherty (https://github.com/bendoh) for the great programming approach
+    * 
+    *
+    * @since Customizr 3.0
+    */
+    function tc__ ( $load ) {
+        
+        static $instances;
+
+        foreach ( $load as $group => $files ) {
+            foreach ($files as $path_suffix ) {
+                //checks if a child theme is used and if the required file has to be overriden
+                if ( $this -> tc_is_child() && file_exists( TC_BASE_CHILD . $path_suffix[0] . '/class-' . $group . '-' .$path_suffix[1] .'.php') ) {
+                    require_once ( TC_BASE_CHILD . $path_suffix[0] . '/class-' . $group . '-' .$path_suffix[1] .'.php') ;
+                }
+                else {
+                    require_once ( TC_BASE . $path_suffix[0] . '/class-' . $group . '-' .$path_suffix[1] .'.php') ;
+                }
+                
+                $classname = 'TC_' . $path_suffix[1];
+                if( ! isset( $instances[ $classname ] ) ) 
+                {
+                    $instances[ $classname ] = class_exists($classname)  ? new $classname : '';
+                }
+            }
+        }
+        return $instances[ $classname ];
+    }
+
+
+
+    /**
+    * Checks if we use a child theme. Uses a deprecated WP functions (get_theme_data) for versions <3.4
+    * @return boolean
+    * 
+    * @since  Customizr 3.0.11
+    */
+    function tc_is_child() {
+        // get themedata version wp 3.4+
+        if( function_exists( 'wp_get_theme' ) ) {
+            //get WP_Theme object of customizr
+            $tc_theme       = wp_get_theme();
+            //define a boolean if using a child theme
+            $is_child       = ( $tc_theme -> parent() ) ? true : false;
+         }
+         else {
+            $tc_theme       = get_theme_data( get_stylesheet_directory() . '/style.css' );
+            $is_child       = ( ! empty($tc_theme['Template']) ) ? true : false;
+        }
+
+        return $is_child;
+    }
+
+}//end of class
+
+//Creates a new instance
+new TC___;

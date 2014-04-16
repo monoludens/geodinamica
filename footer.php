@@ -1,26 +1,21 @@
 <?php
-/**
- * The template for displaying the footer
+ /**
+ * The template for displaying the footer.
  *
- * Contains footer content and the closing of the #main and #page div elements.
  *
- * @package WordPress
- * @subpackage Twenty_Thirteen
- * @since Twenty Thirteen 1.0
+ * @package Customizr
+ * @since Customizr 3.0
  */
+do_action( '__before_footer' );
 ?>
-
-		</div><!-- #main -->
-		<footer id="colophon" class="site-footer" role="contentinfo">
-			<?php get_sidebar( 'main' ); ?>
-
-			<div class="site-info">
-				<?php do_action( 'twentythirteen_credits' ); ?>
-				<a href="<?php echo esc_url( __( 'http://wordpress.org/', 'twentythirteen' ) ); ?>" title="<?php esc_attr_e( 'Semantic Personal Publishing Platform', 'twentythirteen' ); ?>"><?php printf( __( 'Proudly powered by %s', 'twentythirteen' ), 'WordPress' ); ?></a>
-			</div><!-- .site-info -->
-		</footer><!-- #colophon -->
-	</div><!-- #page -->
-
-	<?php wp_footer(); ?>
-</body>
+	<!-- FOOTER -->
+	<footer id="footer" class="<?php echo tc__f('tc_footer_classes', '') ?>">
+	 	<?php do_action( '__footer' ); // hook of footer widget and colophon?>
+	</footer>
+<?php 
+wp_footer(); //do not remove, used by the theme and many plugins
+do_action( '__after_footer' ); 
+?>
+	</body>
+<?php do_action( '__after_body' );  ?>
 </html>
